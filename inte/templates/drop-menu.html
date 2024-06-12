@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Savic Tech</title>
+  <link rel="stylesheet" href="../static/drop-menu.css">
+  <link rel="stylesheet" href="../static/dashboard.css">
+  <link rel="shortcut icon" href="https://savictech.com/img/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="https://savictech.com/img/apple-touch-icon.png">
+  
+  <!-- Boxicons CDN Link -->
+  <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+  <div class="sidebar close">
+    <ul class="nav-links">
+      <li>
+        <ul class="sub-menu blank">
+          <li><a class="link_name" href="#">Hand Written Invoice</a></li>
+        </ul>
+      </li>
+      <li>
+        <div class="iocn-link">
+          <a href="#">
+            <i class='bx bx-collection'></i>
+            <span class="link_name">Hand Written Invoice</span>
+          </a>
+          <i class='bx bxs-chevron-down arrow'></i>
+        </div>
+        <ul class="sub-menu">
+          <li><a class="link_name" href="#"></a></li>
+          <li><a onclick="window.location.href='upload.html'">Single Invoice</a></li>
+          <li><a onclick="window.location.href='upload.html'">Multi Invoice</a></li>
+          <li><a href="#">Folder</a></li>
+          <li><a onclick="window.location.href='drop-menu.html'">Dashboard</a></li>
+        </ul>
+      </li>
+      <li>
+        <div class="iocn-link">
+          <a href="#">
+            <i class='bx bx-book-alt'></i>
+            <span class="link_name">Scanned Invoice</span>
+          </a>
+          <i class='bx bxs-chevron-down arrow'></i>
+        </div>
+        <ul class="sub-menu">
+          <li><a class="link_name" href="#"></a></li>
+          <li><a onclick="window.location.href='upload.html'">Single Invoice</a></li>
+          <li><a onclick="window.location.href='upload.html'">Multi Invoice</a></li>
+          <li><a href="#">Folder</a></li>
+          <li><a onclick="window.location.href='drop-menu.html'">Dashboard</a></li>
+        </ul>
+      </li>
+    </ul>  
+  </div>
+
+  <section class="home-section">
+    <div class="home-content">
+      <i class='bx bx-menu'></i>
+      <img src="../static/images/savic.png" alt="SAVIC Logo">
+    </div>
+
+
+    <div id="dashboard" class="result-container" style="margin-left: 19%;">
+      <div class="image">
+        <img src="static/images/ai-abstract-digital.avif" alt="Nature">
+        <p>OCR Dashboard</p> 
+      </div>
+      <div class="data">
+        <div class="paragraph">
+          <p>Total Invoices Processed</p>
+          <div class="span-container">
+            {% if last_ocr_response %}
+                <span>{{ last_ocr_response.id }}</span>
+            {% else %}
+                <span>No data available</span>
+            {% endif %}
+        </div>
+        </div>
+        <div class="paragraph">
+          <p>Successful Insertions</p>
+          <div class="span-container">
+            <span>{{ success_count }}</span>
+          </div>
+        </div>
+        <div class="paragraph-fail">
+          <p>Failed Insertions</p>
+          <div class="span-container">
+            <span>{{ faild_count }}</span>
+          </div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Name</th>
+            <th>PO Number</th>
+            <th>Amount</th>
+            <th>Status</th>    
+          </tr>
+        </thead>
+        <tbody>
+          {% for invoice in Successful_Invoices %}
+          <tr class="success">
+            <td>Successful</td>
+            <td>{{ invoice.name }}</td>
+            <td>{{ invoice.timestamp|date:"d-m-y" }}</td>
+            <td>{{ invoice.timestamp|date:"H:i:s" }}</td>
+          </tr>
+          {% endfor %}
+          {% for invoice in Failed_Invoices %}
+          <tr class="fail">
+            <td>Failed</td>
+            <td>{{ invoice.name }}</td>
+            <td>{{ invoice.timestamp|date:"d-m-y" }}</td>
+            <td>{{ invoice.timestamp|date:"H:i:s" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- <footer id="footer">
+    <span>
+      © 2024,
+      <a href="http://www.savictech.com" target="_blank">savic technologies pvt. ltd.</a>
+      All Rights Reserved.
+    </span>
+  </footer> -->
+
+  <script>
+    let arrow = document.querySelectorAll(".arrow");
+    for (var i = 0; i < arrow.length; i++) {
+      arrow[i].addEventListener("click", (e) => {
+        let arrowParent = e.target.parentElement.parentElement; // selecting main parent of arrow
+        arrowParent.classList.toggle("showMenu");
+      });
+    }
+
+    let sidebar = document.querySelector(".sidebar");
+    let sidebarBtn = document.querySelector(".bx-menu");
+    sidebarBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("close");
+    });
+
+    // Function to close sidebar if clicked outside of it
+    document.addEventListener("click", function(e) {
+      if (!sidebar.contains(e.target) && !sidebarBtn.contains(e.target)) {
+        sidebar.classList.add("close");
+      }
+    });
+
+    function clearFileInput() {
+      var input = document.getElementById('invoice');
+      input.value = ''; // Clear the input value
+    }
+
+    function showInstructions() {
+      alert("To upload an invoice, follow these steps:\n\n1. Click on the 'Choose File' button.\n\n2. Browse and select the PDF file of your invoice from your device.\n\n3. Click on the 'Upload' button to submit the invoice.\n\nNote: This uploader only accepts PDF files and is intended for invoice uploads only. Please make sure your file is in PDF format before uploading.");
+    }
+
+    function uploadInvoice() {
+      var form = document.getElementById('uploadForm');
+      var formData = new FormData(form);
+      var processingDiv = document.getElementById('processingDiv');
+  
+      // Show processing animation
+      processingDiv.style.display = 'block';
+  
+      // Create an AJAX request
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', form.action, true);
+      xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+      xhr.onload = function() {
+        processingDiv.style.display = 'none';
+        if (xhr.status === 200) {
+          // Request successful, handle response here
+          document.getElementById('extractedData').innerHTML = xhr.responseText;
+        } else {
+          // Request failed, handle error here
+          console.error('Request failed:', xhr.statusText);
+        }
+      };
+      xhr.onerror = function() {
+        // Handle network errors here
+        console.error('Network error occurred');
+        processingDiv.style.display = 'none';
+      };
+  
+      // Send the form data
+      xhr.send(formData);
+    }
+
+    function showPage(pageId) {
+      document.querySelectorAll('.page-content, .result-container').forEach(page => {
+        page.style.display = 'none';
+      });
+      document.getElementById(pageId).style.display = 'block';
+    }
+    function clearFileInput() {
+      document.getElementById('invoice').value = '';
+    }
+
+    function showInstructions() {
+      alert("To upload an invoice, follow these steps:\n\n1. Click on the 'Choose File' button.\n\n2. Browse and select the PDF file of your invoice from your device.\n\n3. Click on the 'Upload' button to submit the invoice.\n\nNote: This uploader only accepts PDF files and is intended for invoice uploads only. Please make sure your file is in PDF format before uploading.");
+    }
+
+    document.getElementById('uploadForm').onsubmit = function(event) {
+      event.preventDefault(); // Prevent the default form submission
+
+      var form = document.getElementById('uploadForm');
+      var formData = new FormData(form);
+      var processingDiv = document.getElementById('processingDiv');
+      processingDiv.style.display = 'block'; // Show the processing div
+
+      // Create an AJAX request
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', form.action, true);
+      xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+      xhr.onload = function() {
+        processingDiv.style.display = 'none';
+        if (xhr.status === 200) {
+          document.body.innerHTML = xhr.responseText; // Replace the body content with the response
+        } else {
+          console.error('Request failed:', xhr.statusText);
+        }
+      };
+      xhr.onerror = function() {
+        console.error('Network error occurred');
+        processingDiv.style.display = 'none';
+      };
+
+      xhr.send(formData);
+    }
+  </script>
+</body>
+</html>
